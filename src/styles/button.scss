@@ -1,0 +1,97 @@
+@import "./common/_var.scss";
+@import "./mixins/mixins.scss";
+
+
+
+$color-list:(
+  primary: $--color-primary,
+  success:$--color-success,
+  warning:$--color-warning,
+  danger:$--color-danger,
+  info:$--color-info
+);
+
+
+
+@include b(button) {
+  display: inline-flex;
+  align-items:center ;
+  line-height: 1;
+  white-space: nowrap;
+  min-height: 40px;
+  outline: none;
+  border: #f1f1f1;
+  user-select: none;
+  padding: 0 15px;
+  border-radius: 5px;
+  vertical-align: middle;
+  .icon{
+    fill:#fff;
+    vertical-align: middle;
+  }
+  @keyframes rotate {
+    from{
+      transform: rotate(0deg);
+    }to{
+      transform: rotate(360deg);
+    }
+  }
+  .loading{
+    animation: rotate 1s infinite;
+  }
+  &:disabled{
+    cursor: not-allowed
+  }
+  & [class*="#{$namespace}-icon-"] {
+    vertical-align: middle;
+    & + span {
+      margin-left: 5px;
+    }
+  }
+  @include when(disabled) {
+    &,
+    &:hover,
+    &:focus {
+      cursor: not-allowed;
+    }
+  }
+  @include when(loading) {
+    pointer-events: none;
+  }
+  @include when(round) {
+    border-radius: 20px;
+  }
+  @include m(right) {
+    span{
+      order:1;
+    }
+    .icon{
+      order:2;
+    }
+  }
+  @include m(left) {
+    .icon{
+      order:1;
+    }
+    span{
+      order:2;
+    }
+  }
+
+  @include m(primary) {
+    //渲染不同类型的button
+    @include button-variant($--color-white, $--color-primary, $--color-primary);
+  }
+  @include m(success) {
+    @include button-variant($--color-white, $--color-success, $--color-success);
+  }
+  @include m(warning) {
+    @include button-variant($--color-white, $--color-warning, $--color-warning);
+  }
+  @include m(danger) {
+    @include button-variant($--color-white, $--color-danger, $--color-danger);
+  }
+  @include m(info) {
+    @include button-variant($--color-white, $--color-info, $--color-info);
+  }
+}
