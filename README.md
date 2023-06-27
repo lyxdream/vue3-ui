@@ -109,7 +109,6 @@ createApp(App).use(Vui).mount('#app')
 
 Iconfont 的 svg 
 
-
 ## 7.使用VitePress搭建文档
 
 ### 基本配置
@@ -131,17 +130,188 @@ npm install vitepress -D
 
 增加入口页面index.md
 
-
 ```md
+# v-ui
+```
+4. 配置导航
 
+config.js
+```js
+module.exports = {
+    title: 'v-ui', // 设置网站标题
+    description: 'ui 库', //描述
+    dest: './build', // 设置输出目录
+    themeConfig: { //主题配置
+        nav: [
+            { text: '主页', link: '/' },
+            { text: "Button 按钮", link: "/button/" },
+            { text: 'icon', link: "/icon/" },
+        ],
+        //   // 为以下路由添加侧边栏
+        sidebar: {
+            '/button/': [
+                {
+                    text: 'Button 按钮', // 必要的
+                    items: [
+                        {
+                            text: "Button的使用",
+                            link: "/button/index",
+                        }
+                    ]
+                }
+            ],
+            '/icon/': [
+                {
+                    text: 'icon', // 必要的
+                    link: "/icon/index",
+                    collapsable: false, // 可选的, 默认值是 true,
+                    items: []
+                }
+            ]
+        }
+    }
+}
 ```
 
 
 
+## 8. 打包组件
 
+### 1.配置打包命令
 
+```json
+"build": "vue-cli-service build --target lib --name vui ./src/packages/index.js --no-clean && vue-cli-service build --all --no-clean",
+```
 
+### 2. vue.config.js
 
+```js
+const args = process.argv.slice(2);
+const path = require('path');
+const fs = require('fs');
+const webpack = require("webpack");
+const getEntries = (dir)=>{
+  let absPath = path.resolve(dir); //绝对路径
+  let files = fs.readdirSync(absPath) //只能读取到儿子这一层
+  let entries = {};
+  // console.log(files,'files---')
+  files.forEach(item=>{
+    let p = path.join(absPath,item);
+    if(fs.statSync(p).isDirectory()){
+       //如果是文件夹
+       p = path.join(p,'index.js')
+       entries[item] = p;
+    }  
+  })
+  return entries
+}
+console.log(getEntries('./src/packages'))
+
+if(process.env.NODE_ENV ==='production'&&args.includes('--all')){
+    module.exports = {
+      outputDir:'dist', //输出的是dist目录
+      configureWebpack:{
+        entry:{
+          ...getEntries('./src/packages')
+        },
+        output:{
+          filename:"lib/[name]/index.js",
+          libraryTarget:'umd',
+          libraryExport:'default',
+          library:['vui','[name]']  //window.v
+        },
+        plugins: [
+          new webpack.LoaderOptionsPlugin({
+            options: {
+             external:{
+               //排除vue
+                vue:{
+                  root:'vue',
+                  commonjs:'vue',
+                  commonjs2:'vue',
+                  amd: 'vue'
+                }
+              },
+            }
+          })
+        ],
+      },
+      css:{
+        sourceMap:true,
+        extract:{
+          filename:'css/[name]/style.css'
+        }
+      },
+      //用户配合babel-plugin-import 就可以实现按需导入
+      chainWebpack: config => {
+        //删除默认的配置
+        config.optimization.delete('splitChunks'),
+        config.plugins.delete('copy')
+        config.plugins.delete('preload')
+        config.plugins.delete('prefetch')
+        config.plugins.delete('html')
+        config.plugins.delete('hmr')
+        config.entryPoints.delete('app')
+      }
+    }
+}
+
+```
+
+### 3. 配置运行入口
+
+```
+"main": "./dist/zf.umd.min.js"
+```
+
+### 4. link到全局下
+
+```bash
+npm link
+```
+
+## 9.搭建测试环境
+
+我们需要测试ui渲染后的结果。需要在浏览器中测试,所有需要使用Karma
+
+### Karma配置
+ (1)安装karma
+
+```bash
+npm install --save-dev  karma karma-chrome-launcher karma-mocha karma-sourcemap-loader karma-spec-reporter karma-webpack mocha karma-chai
+```
+(2)配置karma文件
+
+```js
+//karma.conf.js
+
+const webpackConfig = require('@vue/cli-service/webpack.config')
+
+module.exports = function(config) {
+  config.set({
+    frameworks: ['mocha'],
+    files: ['tests/**/*.spec.js'],
+    preprocessors: {
+      '**/*.spec.js': ['webpack', 'sourcemap']
+    },
+    autoWatch: true,
+    webpack: webpackConfig,
+    reporters: ['spec'],
+    browsers: ['ChromeHeadless']
+  })
+}
+```
+
+```json
+//package.json
+{
+  "scripts": {
+    "test": "karma start"
+  }
+}
+```
+
+### 单元测试
 
 
 
@@ -155,6 +325,9 @@ Fiddler使用教程:(4.1 过滤域名)https://blog.csdn.net/weixin_44330336/arti
 fildder:  https://blog.csdn.net/m0_66501929/article/details/123764930
 
 https://blog.csdn.net/jlhx123456/article/details/124528806
+
+
+
 
 
 

@@ -1,6 +1,15 @@
+// import { expect } from 'chai' //jest中的断言库
+// // import HelloWorld from '@/components/HelloWorld.vue'
+
+// describe('HelloWorld.vue', () => {
+//   it('renders props.msg when passed', () => {
+    
+//   })
+// })
+
 import { expect } from 'chai'
 import { shallowMount } from '@vue/test-utils'
-import HelloWorld from '@/components/HelloWorld.vue'
+import HelloWorld from '@/src/App.vue'
 
 describe('HelloWorld.vue', () => {
   it('renders props.msg when passed', () => {
@@ -11,3 +20,4 @@ describe('HelloWorld.vue', () => {
     expect(wrapper.text()).to.include(msg)
   })
 })
+
